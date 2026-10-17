@@ -15,7 +15,7 @@ export function Services() {
       <div className="ae-callout-wrap">
         <Callout>
           Aeygis brings <span className="ae-callout-dim">sovereign software</span> and specialist services to
-          public sector tenders, from staffing operations to healthcare infrastructure and national cyber
+          the organizations that keep Canada running, from staffing operations to healthcare infrastructure and national cyber
           assurance.
         </Callout>
       </div>

@@ -4,6 +4,16 @@ import { Logo } from "./Logo";
 import { useClock, useTheme } from "../hooks";
 import { Link, navigate } from "../router";
 
+// Aeygis works on Ottawa time, so the clock shows Eastern time (EST/EDT).
+const CLOCK = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "America/Toronto",
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit",
+  hourCycle: "h23",
+  timeZoneName: "short",
+});
+
 const LINKS = [
   { href: "/#updates", label: "Updates" },
   { href: "/#services", label: "Services" },
@@ -25,7 +35,9 @@ export function TopNav() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const utc = now.toISOString().slice(11, 19);
+  const parts = CLOCK.formatToParts(now);
+  const part = (type: Intl.DateTimeFormatPartTypes) => parts.find((p) => p.type === type)?.value ?? "";
+  const clock = `${part("hour")}:${part("minute")}:${part("second")}`;
 
   return (
     <>
@@ -44,12 +56,12 @@ export function TopNav() {
         <NavbarGroup align={Alignment.END}>
           <div className="ae-nav-meta mono">
             <Tag minimal intent="success" icon="dot">
-              CPCSC L1 · 200+ in 2027
+              CPCSC Level 1 readiness
             </Tag>
-            <span className="faint">UTC {utc}</span>
+            <span className="faint">Ottawa {clock} {part("timeZoneName")}</span>
           </div>
           <NavbarDivider className="ae-nav-links" />
-          <Button className="ae-cta ae-nav-links" icon="document-share" text="Submit a tender" onClick={() => navigate("/#contact")} />
+          <Button className="ae-cta ae-nav-links" icon="chat" text="Contact us" onClick={() => navigate("/#contact")} />
           <Button
             variant="minimal"
             icon={theme === "dark" ? "flash" : "moon"}
@@ -81,7 +93,7 @@ export function TopNav() {
               }}
             />
           ))}
-          <Button className="ae-cta" size="large" icon="document-share" text="Submit a tender" onClick={() => { setOpen(false); navigate("/#contact"); }} />
+          <Button className="ae-cta" size="large" icon="chat" text="Contact us" onClick={() => { setOpen(false); navigate("/#contact"); }} />
         </div>
       )}
     </>

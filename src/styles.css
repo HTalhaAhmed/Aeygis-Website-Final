@@ -4,6 +4,7 @@
    Blueprint grid unit is 10px; spacing here stays on 4/8/10 multiples. */
 :root, .ae-on-dark {
   --ae-accent: #f9df5f;
+  --ae-logo-mark: #f9df5f;
   --ae-bg: #07090b;
   --ae-panel: #0e1216;
   --ae-panel-hover: #12171c;
@@ -37,6 +38,7 @@
    #636363 / #767676 secondary text, ink-filled primary buttons, olive-gold accent. */
 html[data-theme="light"] {
   --ae-accent: #7a6838;
+  --ae-logo-mark: #000000;
   --ae-bg: #ffffff;
   --ae-panel: #f9f9f9;
   --ae-panel-hover: #f3f3f3;
@@ -393,6 +395,23 @@ a.ae-svc-row, a.ae-svc-row:hover, .bp6-dark a.ae-svc-row, .bp6-dark a.ae-svc-row
 .ae-op-item-label { font-size: 12px; color: var(--ae-accent); }
 .ae-op-items h3 { margin: 24px 0 8px; font-size: 20px; font-weight: 400; letter-spacing: -0.015em; }
 .ae-op-items p { margin: 0; color: var(--ae-text-muted); line-height: 1.55; }
+
+.ae-op-stats { padding: 56px 0; background: var(--ae-band); border-top: 1px solid var(--ae-line); }
+.ae-op-stats h2 { margin: 0 0 28px; font-weight: 400; }
+.ae-op-stats dl { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 32px; margin: 0; }
+.ae-op-stats dt { font-size: clamp(44px, 5.6vw, 80px); line-height: 1; letter-spacing: -0.05em; color: var(--ae-text); }
+.ae-op-stats dd { margin: 12px 0 0; max-width: 32ch; color: var(--ae-text-muted); font-size: 15px; line-height: 1.5; }
+
+.ae-op-stats-note { margin: 28px 0 0; font-size: 12px; color: var(--ae-text-faint); }
+
+.ae-op-list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.ae-op-list li { padding: 10px 16px; border: 1px solid var(--ae-line-strong); border-radius: 999px; font-size: 15px; }
+
+.ae-op-closing { background: radial-gradient(ellipse 70% 120% at 85% 50%, #11161b 0%, #07090b 70%); padding: 72px 0; }
+.ae-op-closing-inner { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 24px 48px; }
+.ae-op-closing h2 { margin: 0; font-weight: 400; font-size: clamp(32px, 4vw, 56px); line-height: 1.05; letter-spacing: -0.04em; color: var(--ae-text); }
+.ae-op-closing p { margin: 16px 0 0; max-width: 56ch; font-size: 17px; line-height: 1.55; color: var(--ae-text-muted); }
+.ae-op-closing a.bp6-button { text-decoration: none; }
 
 .ae-op-more { list-style: none; margin: 0; padding: 0; }
 .ae-op-more a, .bp6-dark .ae-op-more a {

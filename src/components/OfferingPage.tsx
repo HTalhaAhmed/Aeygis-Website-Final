@@ -4,11 +4,20 @@ import { Link } from "../router";
 import { ServiceMark } from "./Services";
 
 // One page per offering: a dark masthead with the way out to the offering's own website,
-// then its story, key facts, any detail sections and links to the rest of the group.
+// then its story, key facts, a band of headline figures, its detail sections, a closing
+// call to action and links to the rest of the group.
 export function OfferingPage({ item }: { item: Offering }) {
   const index = OFFERINGS.indexOf(item);
   const others = OFFERINGS.filter((o) => o !== item);
   const ctaIsPage = item.cta.href.startsWith("/");
+  const cta = (className: string) =>
+    ctaIsPage ? (
+      <Link className={`bp6-button bp6-large ${className}`} to={item.cta.href}>
+        <span className="bp6-button-text">{item.cta.label}</span>
+      </Link>
+    ) : (
+      <AnchorButton size="large" className={className} text={item.cta.label} href={item.cta.href} />
+    );
 
   return (
     <>
@@ -46,13 +55,7 @@ export function OfferingPage({ item }: { item: Offering }) {
                 ) : (
                   <Button className="ae-op-soon" size="large" icon="globe-network" text="Website coming soon" disabled />
                 )}
-                {ctaIsPage ? (
-                  <Link className="bp6-button bp6-large bp6-minimal ae-op-cta2" to={item.cta.href}>
-                    <span className="bp6-button-text">{item.cta.label}</span>
-                  </Link>
-                ) : (
-                  <AnchorButton variant="minimal" size="large" className="ae-op-cta2" text={item.cta.label} href={item.cta.href} />
-                )}
+                {cta("bp6-minimal ae-op-cta2")}
               </div>
             </div>
             <div className="ae-op-art" aria-hidden="true">
@@ -80,6 +83,23 @@ export function OfferingPage({ item }: { item: Offering }) {
         </div>
       </section>
 
+      {item.stats && (
+        <section className="ae-op-stats" aria-labelledby="op-stats">
+          <div className="wrap">
+            <h2 id="op-stats" className="mono caps faint">{item.stats.title}</h2>
+            <dl>
+              {item.stats.items.map((st) => (
+                <div key={st.value + st.label}>
+                  <dt>{st.value}</dt>
+                  <dd>{st.label}</dd>
+                </div>
+              ))}
+            </dl>
+            {item.stats.note && <p className="ae-op-stats-note">{item.stats.note}</p>}
+          </div>
+        </section>
+      )}
+
       {item.sections?.map((s) => (
         <section key={s.title} className="ae-section">
           <div className="wrap">
@@ -89,18 +109,38 @@ export function OfferingPage({ item }: { item: Offering }) {
                 {s.lede && <p>{s.lede}</p>}
               </div>
             </header>
-            <ol className="ae-op-items">
-              {s.items.map((it, i) => (
-                <li key={it.title}>
-                  <span className="ae-op-item-label mono">{it.label ?? `/0.${i + 1}`}</span>
-                  <h3>{it.title}</h3>
-                  {it.body && <p>{it.body}</p>}
-                </li>
-              ))}
-            </ol>
+            {s.variant === "list" ? (
+              <ul className="ae-op-list">
+                {s.items.map((it) => (
+                  <li key={it.title}>{it.title}</li>
+                ))}
+              </ul>
+            ) : (
+              <ol className="ae-op-items">
+                {s.items.map((it, i) => (
+                  <li key={it.title}>
+                    <span className="ae-op-item-label mono">{it.label ?? `/0.${i + 1}`}</span>
+                    <h3>{it.title}</h3>
+                    {it.body && <p>{it.body}</p>}
+                  </li>
+                ))}
+              </ol>
+            )}
           </div>
         </section>
       ))}
+
+      {item.closing && (
+        <section className="ae-op-closing bp6-dark ae-on-dark">
+          <div className="wrap ae-op-closing-inner">
+            <div>
+              <h2>{item.closing.title}</h2>
+              <p>{item.closing.body}</p>
+            </div>
+            {cta("ae-cta")}
+          </div>
+        </section>
+      )}
 
       <section className="ae-section">
         <div className="wrap">

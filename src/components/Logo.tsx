@@ -14,7 +14,7 @@ const WORDMARK = [
 export function Logo({ height = 20 }: { height?: number }) {
   return (
     <svg viewBox="0 0 212.03 51.44" height={height} role="img" aria-label="Aeygis">
-      <path d={MARK} fill="var(--ae-accent)" />
+      <path d={MARK} fill="var(--ae-logo-mark)" />
       <g fill="currentColor">
         {WORDMARK.map((d) => (
           <path key={d.slice(0, 12)} d={d} />

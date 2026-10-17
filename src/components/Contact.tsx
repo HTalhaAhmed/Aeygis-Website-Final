@@ -3,58 +3,71 @@ import { Button, Callout, FormGroup, HTMLSelect, Icon, InputGroup, TextArea } fr
 import { CONTACT_EMAIL, OFFERINGS } from "../data/site";
 import { SectionHead } from "./SectionHead";
 
-const VEHICLES = ["RFP", "RFQ", "RFSO / Standing offer", "Supply arrangement", "Sole-source / ACAN", "Other"];
+// FormSubmit relays each submission to the inbox as an email; no server of our own needed.
+// The first submission sends a one-time activation email to CONTACT_EMAIL that must be confirmed.
+const FORM_ENDPOINT = `https://formsubmit.co/ajax/${CONTACT_EMAIL}`;
 
 export function Contact() {
-  const [form, setForm] = useState({ name: "", org: "", email: "", ref: "", vehicle: VEHICLES[0], division: "Not sure", closing: "", notes: "" });
-  const [sent, setSent] = useState(false);
+  const [form, setForm] = useState({ name: "", org: "", email: "", phone: "", division: "Not sure", notes: "" });
+  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [honey, setHoney] = useState("");
   const set = (k: keyof typeof form) => (e: { currentTarget: { value: string } }) =>
     setForm((f) => ({ ...f, [k]: e.currentTarget.value }));
 
-  const submit = (e: FormEvent) => {
+  const submit = async (e: FormEvent) => {
     e.preventDefault();
-    const subject = `Tender: ${form.ref || "New solicitation"} | ${form.org}`;
-    const body = [
-      `Name: ${form.name}`,
-      `Organization: ${form.org}`,
-      `Email: ${form.email}`,
-      `Solicitation ref: ${form.ref}`,
-      `Vehicle: ${form.vehicle}`,
-      `Offering: ${form.division}`,
-      `Closing date: ${form.closing}`,
-      "",
-      form.notes,
-    ].join("\n");
-    window.location.href = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    setSent(true);
+    setStatus("sending");
+    try {
+      const res = await fetch(FORM_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({
+          _subject: `Website enquiry: ${form.division} | ${form.org}`,
+          _template: "table",
+          _honey: honey,
+          Name: form.name,
+          Organization: form.org,
+          email: form.email,
+          Phone: form.phone,
+          Offering: form.division,
+          Message: form.notes,
+        }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || String(data?.success) !== "true") throw new Error(data?.message ?? res.statusText);
+      setStatus("sent");
+      setForm((f) => ({ ...f, notes: "" }));
+    } catch {
+      setStatus("error");
+    }
   };
 
   return (
     <section className="ae-section" id="contact">
       <div className="wrap">
-        <SectionHead title="Send us a solicitation." />
+        <SectionHead title="Let's talk." />
         <div className="ae-contact">
           <div className="ae-panel">
             <div className="ae-panel-head">
               <span className="title mono caps">
-                <Icon icon="info-sign" size={12} /> Tenders desk
+                <Icon icon="info-sign" size={12} /> Get in touch
               </span>
             </div>
             <div className="ae-panel-body ae-contact-copy">
-              <h3>Invite Aeygis to bid, or request a capability brief.</h3>
+              <h3>Tell us what you are working on.</h3>
               <p>
-                Share the solicitation reference and closing date. We route it to the owning division and confirm a
-                bid / no-bid decision.
+                Share a few details about your organization and what you need. We route it to the right team and get
+                back to you.
               </p>
               <dl className="ae-kv">
                 <dt>Inbox</dt>
                 <dd>
                   <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
                 </dd>
-                <dt>Vehicles</dt>
-                <dd>RFP · RFQ · RFSO · SA</dd>
+                <dt>Offerings</dt>
+                <dd>{OFFERINGS.map((o) => o.name).join(" · ")}</dd>
                 <dt>Security</dt>
-                <dd>CPCSC Level 1 audits, 2027 program</dd>
+                <dd>CPCSC Level 1 readiness</dd>
               </dl>
             </div>
           </div>
@@ -62,16 +75,33 @@ export function Contact() {
           <form className="ae-panel ae-form" onSubmit={submit}>
             <div className="ae-panel-head">
               <span className="title mono caps">
-                <Icon icon="form" size={12} /> Solicitation intake
+                <Icon icon="form" size={12} /> Enquiry
               </span>
               <span className="mono faint">FORM-01</span>
             </div>
             <div className="ae-panel-body">
-              {sent && (
+              {status === "sent" && (
                 <Callout intent="success" icon="tick" compact style={{ marginBottom: 10 }}>
-                  Your email client should now be open with the details filled in.
+                  Thanks, your message has been sent. We will reply to {form.email}.
                 </Callout>
               )}
+              {status === "error" && (
+                <Callout intent="danger" icon="error" compact style={{ marginBottom: 10 }}>
+                  Your message could not be sent. Please try again, or email us at{" "}
+                  <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
+                </Callout>
+              )}
+              {/* Spam trap: hidden from people, filled in by bots. */}
+              <input
+                type="text"
+                name="_honey"
+                tabIndex={-1}
+                autoComplete="off"
+                aria-hidden="true"
+                style={{ display: "none" }}
+                value={honey}
+                onChange={(e) => setHoney(e.currentTarget.value)}
+              />
               <div className="ae-form-row">
                 <FormGroup label="Name" labelFor="f-name">
                   <InputGroup id="f-name" required value={form.name} onChange={set("name")} />
@@ -84,31 +114,23 @@ export function Contact() {
                 <FormGroup label="Email" labelFor="f-email">
                   <InputGroup id="f-email" type="email" required leftIcon="envelope" value={form.email} onChange={set("email")} />
                 </FormGroup>
-                <FormGroup label="Solicitation ref" labelFor="f-ref">
-                  <InputGroup id="f-ref" placeholder="e.g. W1234-25XXXX" className="mono" value={form.ref} onChange={set("ref")} />
+                <FormGroup label="Phone (optional)" labelFor="f-phone">
+                  <InputGroup id="f-phone" type="tel" leftIcon="phone" value={form.phone} onChange={set("phone")} />
                 </FormGroup>
               </div>
-              <div className="ae-form-row">
-                <FormGroup label="Vehicle" labelFor="f-vehicle">
-                  <HTMLSelect id="f-vehicle" fill options={VEHICLES} value={form.vehicle} onChange={set("vehicle")} />
-                </FormGroup>
-                <FormGroup label="Offering" labelFor="f-division">
-                  <HTMLSelect
-                    id="f-division"
-                    fill
-                    options={["Not sure", ...OFFERINGS.map((o) => o.name)]}
-                    value={form.division}
-                    onChange={set("division")}
-                  />
-                </FormGroup>
-              </div>
-              <FormGroup label="Closing date" labelFor="f-closing">
-                <InputGroup id="f-closing" type="date" value={form.closing} onChange={set("closing")} />
+              <FormGroup label="Offering" labelFor="f-division">
+                <HTMLSelect
+                  id="f-division"
+                  fill
+                  options={["Not sure", ...OFFERINGS.map((o) => o.name)]}
+                  value={form.division}
+                  onChange={set("division")}
+                />
               </FormGroup>
-              <FormGroup label="Scope / notes" labelFor="f-notes">
-                <TextArea id="f-notes" fill rows={4} value={form.notes} onChange={set("notes")} />
+              <FormGroup label="How can we help?" labelFor="f-notes">
+                <TextArea id="f-notes" fill rows={5} required value={form.notes} onChange={set("notes")} />
               </FormGroup>
-              <Button type="submit" className="ae-cta" endIcon="send-message" text="Send to tenders desk" />
+              <Button type="submit" className="ae-cta" endIcon="send-message" text="Send message" loading={status === "sending"} />
             </div>
           </form>
         </div>
