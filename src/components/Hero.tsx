@@ -10,8 +10,20 @@ export function Hero() {
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
-    if (reduced) v.pause();
-    else v.play().catch(() => {});
+    if (reduced) {
+      v.pause();
+      return;
+    }
+    // React doesn't write `muted` as an attribute, and mobile browsers only
+    // autoplay videos they can see are muted, so the first play() was being
+    // refused until the video scrolled out and back in. Set it directly, then
+    // retry once the video has data in case the first attempt came too early.
+    v.muted = true;
+    v.defaultMuted = true;
+    const play = () => v.play().catch(() => {});
+    play();
+    v.addEventListener("loadeddata", play);
+    return () => v.removeEventListener("loadeddata", play);
   }, [reduced]);
 
   // The scroll cue retires once the visitor has started scrolling.

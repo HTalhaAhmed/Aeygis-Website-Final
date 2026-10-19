@@ -128,8 +128,12 @@ function FeatureCard(props: {
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
-    if (active && !reduced) v.play().catch(() => {});
-    else v.pause();
+    if (active && !reduced) {
+      // Set muted directly: React doesn't write it as an attribute, and mobile
+      // browsers refuse to autoplay a video they don't see as muted.
+      v.muted = true;
+      v.play().catch(() => {});
+    } else v.pause();
   }, [active, reduced]);
 
   const label = (
