@@ -1,18 +1,8 @@
 import { useEffect, useState } from "react";
 import { Alignment, Button, Navbar, NavbarDivider, NavbarGroup, Tag } from "@blueprintjs/core";
 import { Logo } from "./Logo";
-import { useClock, useTheme } from "../hooks";
+import { useTheme } from "../hooks";
 import { Link, navigate } from "../router";
-
-// Aeygis works on Ottawa time, so the clock shows Eastern time (EST/EDT).
-const CLOCK = new Intl.DateTimeFormat("en-CA", {
-  timeZone: "America/Toronto",
-  hour: "2-digit",
-  minute: "2-digit",
-  second: "2-digit",
-  hourCycle: "h23",
-  timeZoneName: "short",
-});
 
 const LINKS = [
   { href: "/#updates", label: "Updates" },
@@ -23,7 +13,6 @@ const LINKS = [
 export function TopNav() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
-  const now = useClock();
   const { theme, toggle } = useTheme();
   // Palantir-style: in light mode the bar stays dark and transparent over the hero, then turns light on scroll.
   const onDark = theme === "dark" || !scrolled;
@@ -34,10 +23,6 @@ export function TopNav() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
-
-  const parts = CLOCK.formatToParts(now);
-  const part = (type: Intl.DateTimeFormatPartTypes) => parts.find((p) => p.type === type)?.value ?? "";
-  const clock = `${part("hour")}:${part("minute")}:${part("second")}`;
 
   return (
     <>
@@ -58,7 +43,6 @@ export function TopNav() {
             <Tag minimal intent="success" icon="dot">
               CPCSC Level 1 readiness
             </Tag>
-            <span className="faint">Ottawa {clock} {part("timeZoneName")}</span>
           </div>
           <NavbarDivider className="ae-nav-links" />
           <Button className="ae-cta ae-nav-links" icon="chat" text="Contact us" onClick={() => navigate("/#contact")} />
