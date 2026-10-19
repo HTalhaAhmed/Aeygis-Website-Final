@@ -118,6 +118,7 @@ export const OFFERINGS: Offering[] = [
     name: "Gantry",
     kind: "Service",
     tagline: "AWS infrastructure, designed, built and run",
+    website: "https://gantry.aeygis.com/",
     mark: "gantry",
     video: "/media/services/gantry.mp4",
     intro: [
