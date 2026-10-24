@@ -2,10 +2,15 @@ import { useEffect, useRef, useState } from "react";
 import { Icon } from "@blueprintjs/core";
 import { usePrefersReducedMotion } from "../hooks";
 
+// Phones and tablets get a 720p cut (~2 MB) instead of the 1080p loop (7-12 MB).
+// Matches the poster preloads in index.html.
+const SMALL_SCREEN = "(max-width: 1024px)";
+
 export function Hero() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const reduced = usePrefersReducedMotion();
   const [scrolled, setScrolled] = useState(false);
+  const [suffix] = useState(() => (window.matchMedia(SMALL_SCREEN).matches ? "-720" : ""));
 
   useEffect(() => {
     const v = videoRef.current;
@@ -43,12 +48,12 @@ export function Hero() {
         muted
         loop
         playsInline
-        preload="auto"
-        poster="/media/hero-poster.jpg"
+        preload="metadata"
+        poster={`/media/hero-poster${suffix}.jpg`}
         aria-hidden="true"
       >
-        <source src="/media/hero-loop.webm" type="video/webm" />
-        <source src="/media/hero-loop.mp4" type="video/mp4" />
+        <source src={`/media/hero-loop${suffix}.webm`} type="video/webm" />
+        <source src={`/media/hero-loop${suffix}.mp4`} type="video/mp4" />
       </video>
       <div className="ae-hero-scan" />
       <span className="ae-corner tl" />

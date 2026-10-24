@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Builds public/media/hero-loop.mp4 (+ .webm, poster) from the raw clips in ./videos.
+# Builds public/media/hero-loop.mp4 (+ .webm, poster) from the raw clips in ./videos,
+# plus a 720p cut and poster (-720 suffix) that phones and tablets load instead.
 # Each shot: ~4s trim -> 1920x1080 crop -> dark grade with crushed blacks and per-clip saturation
 # -> per-clip black overlay (up to 35%) -> crossfaded chain that loops seamlessly.
 set -euo pipefail
@@ -70,6 +71,12 @@ ffmpeg -v error -y "${inputs[@]}" -filter_complex "$filter" -map "$prev" -an \
   -c:v libx264 -preset slow -crf 24 -profile:v high -pix_fmt yuv420p -movflags +faststart \
   "$OUT/hero-loop.mp4"
 ffmpeg -v error -y -i "$OUT/hero-loop.mp4" -an -c:v libvpx-vp9 -b:v 0 -crf 38 -row-mt 1 -deadline good "$OUT/hero-loop.webm"
-ffmpeg -v error -y -ss 1 -i "$OUT/hero-loop.mp4" -frames:v 1 -q:v 3 "$OUT/hero-poster.jpg"
+ffmpeg -v error -y -ss 1 -i "$OUT/hero-loop.mp4" -frames:v 1 -q:v 7 "$OUT/hero-poster.jpg"
 
-ffprobe -v error -show_entries format=duration,size -of default=nw=1 "$OUT/hero-loop.mp4"
+ffmpeg -v error -y -i "$OUT/hero-loop.mp4" -an -vf "scale=1280:720:flags=lanczos" \
+  -c:v libx264 -preset slow -crf 31 -profile:v high -pix_fmt yuv420p -movflags +faststart \
+  "$OUT/hero-loop-720.mp4"
+ffmpeg -v error -y -i "$OUT/hero-loop-720.mp4" -an -c:v libvpx-vp9 -b:v 0 -crf 45 -row-mt 1 -deadline good "$OUT/hero-loop-720.webm"
+ffmpeg -v error -y -ss 1 -i "$OUT/hero-loop.mp4" -frames:v 1 -vf "scale=1280:720:flags=lanczos" -q:v 7 "$OUT/hero-poster-720.jpg"
+
+ffprobe -v error -show_entries format=duration,size -of default=nw=1 "$OUT/hero-loop.mp4" "$OUT/hero-loop-720.mp4"
